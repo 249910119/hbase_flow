@@ -1,0 +1,15 @@
+com\persagy\hbase\flow\service\impl\TableTotalServiceImpl.class
+com\persagy\hbase\flow\controller\SimpleTableController.class
+com\persagy\hbase\flow\utils\DateUtils.class
+com\persagy\hbase\flow\utils\OptionTypeEnum.class
+com\persagy\hbase\flow\constant\HbaseDBConstant.class
+com\persagy\hbase\flow\controller\TableTotalController.class
+com\persagy\hbase\flow\service\impl\SimpleTableServiceImpl.class
+com\persagy\hbase\flow\utils\HbaseUtils.class
+com\persagy\hbase\flow\bean\HTableSimpleTotal.class
+com\persagy\hbase\flow\bean\TableInfo.class
+com\persagy\hbase\flow\utils\CommonUtils.class
+com\persagy\hbase\flow\bean\HTableTotal.class
+com\persagy\hbase\flow\service\SimpleTableService.class
+com\persagy\hbase\flow\service\TableTotalService.class
+com\persagy\hbase\flow\FlowApplication.class
