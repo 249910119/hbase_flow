@@ -16,6 +16,15 @@ public class TableTotalController {
     @Autowired
     TableTotalService tableTotalService;
 
+    @GetMapping("table_total_list")
+    public String getTableTotal(@RequestParam("start_date") String startDate,
+                                @RequestParam("end_date") String endDate,
+                                @RequestParam("option_type") String optionType){
+        JSONObject json = tableTotalService.getCollectDatas(startDate, endDate, optionType);
+
+        return json.toJSONString();
+    }
+
     /**
      * 首页按日期、选择条件统计数据（饼图、柱状图）
      * @param startDate 开始日期

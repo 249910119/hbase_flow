@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.persagy.hbase.flow.FlowApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.64 s - in com.persagy.hbase.flow.FlowApplicationTests

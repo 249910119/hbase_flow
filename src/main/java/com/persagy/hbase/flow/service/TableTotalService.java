@@ -21,4 +21,13 @@ public interface TableTotalService {
      * @return
      */
     public JSONObject getCollectDataBySimpleTable(String startDate, String endDate, String optionType);
+
+    /**
+     * 首页数据
+     * @param startDate
+     * @param endDate
+     * @param optionType
+     * @return
+     */
+    public JSONObject getCollectDatas(String startDate, String endDate, String optionType);
 }

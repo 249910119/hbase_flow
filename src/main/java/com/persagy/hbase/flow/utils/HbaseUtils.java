@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 /**
@@ -37,13 +39,15 @@ public class HbaseUtils {
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
 
         try {
-            connection = ConnectionFactory.createConnection(conf);
+            if (connection == null){
+                connection = ConnectionFactory.createConnection(conf);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-/*
+
 
     public static Connection getConnection(){
 
@@ -57,13 +61,14 @@ public class HbaseUtils {
             ExecutorService executorService = Executors.newFixedThreadPool(10);
 
             connection = ConnectionFactory.createConnection(conf, executorService);
+            Table table = connection.getTable(TableName.valueOf(""), executorService);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
         return connection;
     }
-*/
+
 
     /**
      * 获取所有 nameSpace 名字
@@ -191,9 +196,8 @@ public class HbaseUtils {
                 String[] names = name.split(":");
 
                 Admin admin = connection.getAdmin();
-                Pattern pattern = Pattern.compile(names[0] + ":.+" + names[1] + ".+");
+                Pattern pattern = Pattern.compile("^" + names[0] + "+.*" + names[1] + ".*");
 
-//                TableName[] tableNames = admin.listTableNamesByNamespace(names[0]);
                 TableName[] tableNames = admin.listTableNames(pattern);
                 for (TableName tableName : tableNames) {
                     String v = Bytes.toString(tableName.getName());
