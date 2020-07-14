@@ -39,18 +39,4 @@ public class SimpleTableController {
         return result.toJSONString();
     }
 
-    @GetMapping("list_sort")
-    public List<HTableTotal> getStringSort(){
-
-        List<HTableTotal> l = new ArrayList<>();
-
-        l.add(new HTableTotal("202007071130", 54513215L));
-        l.add(new HTableTotal("202007071125", 54513215L));
-        l.add(new HTableTotal("202007071140", 54513215L));
-        l.add(new HTableTotal("202007071135", 54513215L));
-
-        Collections.sort(l);
-
-        return l;
-    }
 }

@@ -14,6 +14,7 @@ public class CommonUtils {
 
         StringBuffer buff = new StringBuffer("");
 
+
         if (name != null && !"".equals(name)){
 
             String s = name.split("\\.")[0];

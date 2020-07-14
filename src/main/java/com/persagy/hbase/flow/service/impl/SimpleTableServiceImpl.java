@@ -7,9 +7,13 @@ import com.persagy.hbase.flow.utils.DateUtils;
 import com.persagy.hbase.flow.utils.HbaseUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
+import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.stereotype.Service;
@@ -103,6 +107,20 @@ public class SimpleTableServiceImpl implements SimpleTableService {
         }
         long l5 = System.currentTimeMillis();
         System.out.println("处理数据时间：" + (l5 - l4));
+
+        long l6 = System.currentTimeMillis();
+        TableName name=TableName.valueOf(tableName);
+        Scan scan = new Scan();
+        AggregationClient aggregationClient = new AggregationClient(connection.getConfiguration());
+        try {
+            long tableCount = aggregationClient.rowCount(name, new LongColumnInterpreter(), scan);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        long l7 = System.currentTimeMillis();
+        System.out.println("获取表行数时间：" + (l5 - l4));
+
+
 
         return jsonObject;
     }

@@ -71,7 +71,6 @@ public class TableTotalServiceImpl implements TableTotalService {
                         String[] split = rowKeys.split(",");
                         String flowTime = split[0];
                         String tableName = split[1];
-//                        String allTableFlowTime = rowKeys.split(",")[0];
 
                         byte[] cellBytes = CellUtil.cloneValue(cell);
                         Long allTableValue = 0L;
@@ -86,14 +85,11 @@ public class TableTotalServiceImpl implements TableTotalService {
                             allTableJsonObject.put(flowTime, r);
                         }
 
-//                        String simpleTableRowKeys = Bytes.toString(CellUtil.cloneRow(cell));
-//                        String simpleTableTableName = rowKeys.split(",")[1];
 
                         String subTableName = CommonUtils.subTableName(tableName);
 
                         String key = dbName + ":" + subTableName;
 
-//                        byte[] cellBytes = CellUtil.cloneValue(cell);
                         Long simpleTableValue = 0L;
                         if (cellBytes.length > 0) {
                             simpleTableValue = Bytes.toLong(cellBytes);

@@ -7,10 +7,16 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.NamespaceDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
+import org.apache.hadoop.hbase.client.coprocessor.LongColumnInterpreter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +28,7 @@ import java.util.regex.Pattern;
 /**
  * Hbase 工具类
  */
+@Component
 public class HbaseUtils {
 
     public static Connection connection = null;
@@ -31,25 +38,26 @@ public class HbaseUtils {
     /**
      * 初始化 Hbase 连接
      */
-    static{
+//    static{
+//
+//        Configuration conf = HBaseConfiguration.create();
+//
+//        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, "zookeeper1");
+//        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
+//
+//        try {
+//            if (connection == null){
+//                connection = ConnectionFactory.createConnection(conf);
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-        Configuration conf = HBaseConfiguration.create();
-
-        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, "zookeeper1");
-        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
-
-        try {
-            if (connection == null){
-                connection = ConnectionFactory.createConnection(conf);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 
-
-    public static Connection getConnection(){
+    @PostConstruct
+    public static Connection openConnection(){
 
         Configuration conf = HBaseConfiguration.create();
 
@@ -61,7 +69,8 @@ public class HbaseUtils {
             ExecutorService executorService = Executors.newFixedThreadPool(10);
 
             connection = ConnectionFactory.createConnection(conf, executorService);
-            Table table = connection.getTable(TableName.valueOf(""), executorService);
+
+            System.out.println("已经开启 Hbase 连接");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -160,17 +169,18 @@ public class HbaseUtils {
                     scan.setFilter(rowKeyFilter);
                 }
 
-                //添加列族过滤或者列过滤
-                String optionTypeNames = OptionTypeEnum.getName(optionType);
-                if (optionTypeNames == null || optionTypeNames.isEmpty()) {
-                    return null;
-                }
+
 
                 scan.addFamily(Bytes.toBytes(HbaseDBConstant.FAMILY_NAME));
 
-                for (String columnName : optionTypeNames.split(",")) {
-                    scan.addColumn(Bytes.toBytes(HbaseDBConstant.FAMILY_NAME),Bytes.toBytes(columnName));
+                //添加列族过滤或者列过滤
+                String optionTypeNames = OptionTypeEnum.getName(optionType);
+                if (optionTypeNames != null || !optionTypeNames.isEmpty()) {
+                    for (String columnName : optionTypeNames.split(",")) {
+                        scan.addColumn(Bytes.toBytes(HbaseDBConstant.FAMILY_NAME),Bytes.toBytes(columnName));
+                    }
                 }
+
 
                 scanner = htable.getScanner(scan);
             }
@@ -251,6 +261,36 @@ public class HbaseUtils {
         }
 
         return queryTableNames;
+    }
+
+    public static void rowCountByCoprocessor(Connection connection, String tablename){
+        try {
+            //提前创建connection和conf
+            Admin admin = connection.getAdmin();
+            TableName name=TableName.valueOf(tablename);
+            //先disable表，添加协处理器后再enable表
+            admin.disableTable(name);
+            HTableDescriptor descriptor = admin.getTableDescriptor(name);
+            String coprocessorClass = "org.apache.hadoop.hbase.coprocessor.AggregateImplementation";
+            if (! descriptor.hasCoprocessor(coprocessorClass)) {
+                descriptor.addCoprocessor(coprocessorClass);
+            }
+            admin.modifyTable(name, descriptor);
+            admin.enableTable(name);
+
+            //计时
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+
+            Scan scan = new Scan();
+            AggregationClient aggregationClient = new AggregationClient(connection.getConfiguration());
+            long l = aggregationClient.rowCount(name, new LongColumnInterpreter(), scan);
+            System.out.println("RowCount: " + aggregationClient.rowCount(name, new LongColumnInterpreter(), scan));
+            stopWatch.stop();
+            System.out.println("统计耗时：" +stopWatch.getTotalTimeMillis());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     /**
